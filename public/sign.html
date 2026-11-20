@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sözleşme İmzalama — İmzaKayıt</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">İK</div>
+        <span>Dijital Sözleşme Onayı</span>
+      </div>
+      <nav class="nav-actions">
+        <a href="/dogrula" class="nav-link" target="_blank" rel="noopener">Belge Doğrula</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container-narrow">
+    <div id="loading-card" class="card">
+      <p style="margin:0;">Belge yükleniyor...</p>
+    </div>
+
+    <div id="error-card" class="card hidden">
+      <div id="error-message" class="alert alert-danger" style="margin-bottom:0;"></div>
+    </div>
+
+    <div id="sign-container" class="hidden">
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h1 id="doc-title" style="margin:0 0 4px 0;font-size:21px;"></h1>
+            <div id="doc-meta" class="muted mono" style="font-size:12.5px;"></div>
+          </div>
+          <span id="doc-status-badge" class="badge badge-pending">İmza Bekliyor</span>
+        </div>
+
+        <div id="doc-body" class="document-viewer"></div>
+      </section>
+
+      <!-- Zaten İmzalanmış Durumu -->
+      <section id="already-signed-card" class="card hidden">
+        <div class="alert alert-ok">
+          <strong>Bu sözleşme başarıyla imzalanmış ve kilitlenmiştir.</strong>
+          <div id="signed-summary-text" style="margin-top:6px;"></div>
+        </div>
+        <div class="btn-group">
+          <a id="archive-view-link" class="btn btn-primary" href="#">İmzalı Belgeyi Gör / PDF Olarak Kaydet</a>
+          <a id="archive-download-link" class="btn btn-secondary" href="#">Arşiv Dosyasını İndir (.html)</a>
+        </div>
+      </section>
+
+      <!-- İptal Edilmiş Durumu -->
+      <section id="revoked-card" class="card hidden">
+        <div class="alert alert-danger" style="margin-bottom:0;">
+          Bu imza bağlantısı düzenleyen kişi tarafından iptal edilmiştir ve artık imzalanamaz.
+        </div>
+      </section>
+
+      <!-- İmza Formu -->
+      <section id="sign-form-card" class="card hidden">
+        <h2 class="card-title" style="margin-bottom:14px;">Dijital Onay ve İmza Adımı</h2>
+
+        <div id="form-error" class="alert alert-danger hidden"></div>
+
+        <form id="sign-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="signer-name">Adınız ve Soyadınız</label>
+              <input id="signer-name" type="text" required minlength="2" maxlength="120" placeholder="Ad Soyad" />
+            </div>
+            <div class="form-group">
+              <label for="signer-contact">E-posta veya Telefon (Opsiyonel)</label>
+              <input id="signer-contact" type="text" maxlength="120" placeholder="ornek@eposta.com" />
+            </div>
+          </div>
+
+          <div id="pin-group" class="form-group hidden">
+            <label for="pin-code">6 Haneli Onay Kodu (PIN)</label>
+            <input id="pin-code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="mono" placeholder="Gönderenin paylaştığı 6 haneli kod" />
+            <div class="muted" style="margin-top:4px;font-size:12px;">2 adımlı güvenlik doğrulaması için göndericinin ilettiği 6 haneli onay kodunu girin.</div>
+          </div>
+
+          <div class="form-group">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+              <label style="margin:0;">İmzanız</label>
+              <div class="btn-group">
+                <button id="mode-draw-btn" type="button" class="btn btn-primary btn-sm">El İle Çiz</button>
+                <button id="mode-type-btn" type="button" class="btn btn-secondary btn-sm">Yazı ile İmza</button>
+              </div>
+            </div>
+
+            <div id="draw-signature-box">
+              <div class="sig-pad-wrap">
+                <canvas id="sig-canvas" class="sig-canvas"></canvas>
+                <div id="sig-placeholder" class="sig-placeholder">Parmağınızla veya farenizle buraya imza atın</div>
+              </div>
+              <div class="btn-group" style="margin-top:8px;">
+                <button id="sig-undo-btn" type="button" class="btn btn-secondary btn-sm">Geri Al</button>
+                <button id="sig-clear-btn" type="button" class="btn btn-secondary btn-sm">Temizle</button>
+              </div>
+            </div>
+
+            <div id="typed-signature-box" class="hidden">
+              <input id="typed-signature-input" type="text" maxlength="100" placeholder="İmza olarak görünecek ad soyad" style="margin-bottom:8px;" />
+              <div id="typed-signature-preview" class="sig-preview-typed">Ad Soyad</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="checkbox-row">
+              <input id="consent-checkbox" type="checkbox" required />
+              <span>Yukarıdaki sözleşme metnini eksiksiz okudum, anladım ve kendi özgür irademle dijital olarak onaylıyorum.</span>
+            </label>
+          </div>
+
+          <button id="submit-sign-btn" type="submit" class="btn btn-success btn-lg" style="width:100%;">
+            Dijital Olarak İmzala ve Gönder
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <p class="disclaimer-footer">
+      Bu sayfa basit dijital onay ve zaman damgalı arşiv kaydı oluşturur; 5070 sayılı Elektronik İmza Kanunu kapsamındaki nitelikli e-İmza / Mobil İmza yerine geçmez.
+    </p>
+  </main>
+
+  <script type="module" src="/app/sign.js"></script>
+</body>
+</html>
+

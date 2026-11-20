@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>İmzaKayıt — Düzenlenebilir Sözleşme &amp; Dijital Onay Paneli</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <!-- Kurulum / Giriş Ekranı -->
+  <div id="auth-view" class="auth-wrapper hidden">
+    <div class="card auth-card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div class="brand-mark" style="color:#fff;">İK</div>
+        <div>
+          <h1 id="auth-title" style="margin:0;font-size:19px;">Yönetici Girişi</h1>
+          <p id="auth-subtitle" class="muted" style="margin:2px 0 0 0;">Devam etmek için şifrenizi girin.</p>
+        </div>
+      </div>
+
+      <div id="auth-error" class="alert alert-danger hidden"></div>
+
+      <form id="auth-form">
+        <div id="auth-email-group" class="form-group hidden">
+          <label for="auth-email">Yönetici E-posta Adresi</label>
+          <input id="auth-email" type="email" autocomplete="email" placeholder="ornek@eposta.com" />
+        </div>
+        <div class="form-group">
+          <label for="auth-password">Yönetici Şifresi</label>
+          <input id="auth-password" type="password" autocomplete="current-password" minlength="6" required placeholder="En az 6 karakter" />
+        </div>
+        <div id="auth-confirm-group" class="form-group hidden">
+          <label for="auth-password-confirm">Şifreyi Tekrar Girin</label>
+          <input id="auth-password-confirm" type="password" autocomplete="new-password" minlength="4" placeholder="Şifreyi doğrulayın" />
+        </div>
+        <button id="auth-submit-btn" type="submit" class="btn btn-primary btn-lg" style="width:100%;">Giriş Yap</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Yönetici Paneli -->
+  <div id="app-view" class="hidden">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-mark">İK</div>
+          <span>İmzaKayıt Paneli</span>
+        </div>
+        <nav class="nav-actions">
+          <a href="/dogrula" class="nav-link" target="_blank" rel="noopener">Belge Doğrula</a>
+          <button id="enable-browser-notif-btn" type="button" class="btn btn-secondary btn-sm">Masaüstü Bildirimi Aç</button>
+          <button id="logout-btn" type="button" class="btn btn-secondary btn-sm">Çıkış</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Toplam Sözleşme</div>
+          <div id="stat-total" class="stat-value">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">İmza Bekleyen</div>
+          <div id="stat-pending" class="stat-value">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Görüntülenen</div>
+          <div id="stat-viewed" class="stat-value">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">İmzalanan</div>
+          <div id="stat-signed" class="stat-value" style="color:var(--ok);">0</div>
+        </div>
+      </section>
+
+      <div class="dashboard-grid">
+        <!-- Sol Kolon: Sözleşme Düzenleyici -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <h2 id="editor-heading" class="card-title">Yeni Sözleşme Oluştur</h2>
+              <p class="muted" style="margin:2px 0 0 0;">İçeriği dilediğiniz gibi düzenleyip paylaşılabilir imza linki üretin.</p>
+            </div>
+            <button id="cancel-edit-btn" type="button" class="btn btn-secondary btn-sm hidden">Düzenlemeyi İptal Et</button>
+          </div>
+
+          <div class="template-bar" aria-label="Hazır Şablonlar">
+            <button type="button" class="chip" data-template="general">Genel Mutabakat</button>
+            <button type="button" class="chip" data-template="service">Hizmet Sözleşmesi</button>
+            <button type="button" class="chip" data-template="nda">Gizlilik (NDA)</button>
+            <button type="button" class="chip" data-template="home">Ortak Yaşam Kuralları</button>
+            <button type="button" class="chip" data-template="blank">Boş Şablon</button>
+          </div>
+
+          <form id="contract-form">
+            <input type="hidden" id="editing-id" value="" />
+
+            <div class="form-group">
+              <label for="c-title">Sözleşme Başlığı</label>
+              <input id="c-title" type="text" required minlength="3" maxlength="200" placeholder="Örn: Ortak Proje Mutabakat Metni" />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="c-creator">Düzenleyen / Gönderen</label>
+                <input id="c-creator" type="text" required minlength="2" maxlength="120" placeholder="Adınız veya kurum adı" />
+              </div>
+              <div class="form-group">
+                <label for="c-recipient">Karşı Taraf (Opsiyonel)</label>
+                <input id="c-recipient" type="text" maxlength="120" placeholder="İmzalayacak kişinin adı" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <label for="c-body" style="margin:0;">Sözleşme İçeriği</label>
+                <button id="toggle-preview-btn" type="button" class="btn btn-secondary btn-sm">Önizleme Göster</button>
+              </div>
+              <textarea id="c-body" required minlength="10" placeholder="Sözleşme maddelerini buraya yazın... Başlıklar için ##, liste için - ve kalın metin için **kalın** kullanabilirsiniz."></textarea>
+              <div id="body-preview" class="document-viewer hidden" style="margin-top:8px;"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="checkbox-row">
+                <input id="c-require-pin" type="checkbox" checked />
+                <span>2 Adımlı Doğrulama: İmza sırasında <strong>6 haneli onay kodu (PIN)</strong> iste (oluşturulan kodu karşı tarafa ayrıca iletebilirsiniz).</span>
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label class="checkbox-row">
+                <input id="c-autoburn" type="checkbox" checked />
+                <span><strong>Kendi Kendini İmha Et:</strong> İmzalandığı an web linkini otomatik kapat (metin internetten kaldırılsın, sadece bilgisayarındaki arşivde kalsın).</span>
+              </label>
+            </div>
+
+            <div id="regenerate-pin-wrap" class="form-group hidden">
+              <label class="checkbox-row">
+                <input id="c-regenerate-pin" type="checkbox" />
+                <span>Kaydederken yeni bir 6 haneli onay kodu üret</span>
+              </label>
+            </div>
+
+            <div class="btn-group">
+              <button id="save-contract-btn" type="submit" class="btn btn-primary btn-lg">Sözleşmeyi Kaydet &amp; Link Oluştur</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Sağ Kolon: Sözleşmeler, Bildirimler ve Ayarlar -->
+        <section class="card">
+          <div class="tabs">
+            <button type="button" class="tab-btn active" data-tab="contracts">Sözleşmeler &amp; Linkler</button>
+            <button type="button" class="tab-btn" data-tab="notifications">Bildirim Geçmişi <span id="notif-badge" class="badge badge-viewed" style="margin-left:4px;">0</span></button>
+            <button type="button" class="tab-btn" data-tab="settings">Bildirim Ayarları</button>
+          </div>
+
+          <div id="tab-contracts">
+            <div id="contracts-list"></div>
+          </div>
+
+          <div id="tab-notifications" class="hidden">
+            <p class="muted" style="margin-top:0;">Bağlantı açıldığında veya imzalandığında bu panel açıkken anlık bildirim alırsınız.</p>
+            <div id="notifications-list"></div>
+          </div>
+
+          <div id="tab-settings" class="hidden">
+            <div class="alert alert-info">
+              Panel kapalıyken de telefonunuza/bilgisayarınıza anlık bildirim gelmesi için <strong>Telegram Bot</strong> veya <strong>Webhook (Discord / Slack / n8n)</strong> tanımlayabilirsiniz.
+            </div>
+            <form id="settings-form">
+              <div class="form-group">
+                <label for="s-webhook">Webhook URL (Discord, Slack veya Özel URL)</label>
+                <input id="s-webhook" type="url" placeholder="https://discord.com/api/webhooks/..." />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="s-tg-token">Telegram Bot Token</label>
+                  <input id="s-tg-token" type="text" placeholder="123456:ABC-DEF..." />
+                </div>
+                <div class="form-group">
+                  <label for="s-tg-chat">Telegram Chat ID</label>
+                  <input id="s-tg-chat" type="text" placeholder="Örn: 987654321" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="checkbox-row">
+                  <input id="s-notify-open" type="checkbox" checked />
+                  <span>Karşı taraf imza linkini ilk kez açtığında bildir</span>
+                </label>
+              </div>
+
+              <div class="form-group">
+                <label class="checkbox-row">
+                  <input id="s-notify-sign" type="checkbox" checked />
+                  <span>Sözleşme imzalandığında bildir</span>
+                </label>
+              </div>
+
+              <div class="btn-group">
+                <button type="submit" class="btn btn-primary">Ayarları Kaydet</button>
+                <button id="test-notif-btn" type="button" class="btn btn-secondary">Test Bildirimi Gönder</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+
+      <p class="disclaimer-footer">
+        Bu platform genel amaçlı dijital onay ve belge arşivleme aracıdır; 5070 sayılı Elektronik İmza Kanunu kapsamındaki nitelikli e-İmza / Mobil İmza yerine geçmez.
+      </p>
+    </main>
+  </div>
+
+  <script type="module" src="/app/admin.js"></script>
+</body>
+</html>
+

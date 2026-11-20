@@ -1,0 +1,104 @@
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>İmzalı Belge Arşivi — İmzaKayıt</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar no-print">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">İK</div>
+        <span>İmzalı Belge Arşivi</span>
+      </div>
+      <nav class="nav-actions">
+        <a id="verify-nav-link" href="/dogrula" class="nav-link">Bütünlüğü Doğrula</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container-narrow">
+    <div id="loading-card" class="card">
+      <p style="margin:0;">Arşiv belgesi yükleniyor...</p>
+    </div>
+
+    <div id="error-card" class="card hidden">
+      <div id="error-message" class="alert alert-danger" style="margin-bottom:0;"></div>
+    </div>
+
+    <div id="archive-container" class="hidden">
+      <div class="card no-print" style="margin-bottom:16px;padding:14px 18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div>
+            <strong>Belge Saklama Araçları</strong>
+            <div class="muted" style="font-size:12.5px;">PDF olarak yazdırabilir veya tek dosya çevrimdışı arşiv olarak indirebilirsiniz.</div>
+          </div>
+          <div class="btn-group">
+            <button id="print-pdf-btn" type="button" class="btn btn-primary btn-sm">Yazdır / PDF Kaydet</button>
+            <a id="download-html-btn" href="#" class="btn btn-secondary btn-sm">HTML Arşiv İndir</a>
+            <button id="download-json-btn" type="button" class="btn btn-secondary btn-sm">JSON Kanıt İndir</button>
+          </div>
+        </div>
+      </div>
+
+      <article class="card">
+        <header style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:18px;flex-wrap:wrap;">
+          <div>
+            <h1 id="a-title" style="margin:0 0 4px 0;font-size:23px;"></h1>
+            <div id="a-id" class="muted mono" style="font-size:12.5px;"></div>
+          </div>
+          <span class="badge badge-signed">&#10003; Dijital Onaylı Belge</span>
+        </header>
+
+        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;background:var(--surface-alt);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:20px;font-size:13.5px;">
+          <div>
+            <div class="muted" style="font-size:11.5px;text-transform:uppercase;font-weight:700;">Düzenleyen</div>
+            <div id="a-creator" style="font-weight:600;"></div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:11.5px;text-transform:uppercase;font-weight:700;">İmzalayan</div>
+            <div id="a-signer" style="font-weight:600;"></div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:11.5px;text-transform:uppercase;font-weight:700;">İmza Zamanı</div>
+            <div id="a-signed-at" style="font-weight:600;"></div>
+          </div>
+        </section>
+
+        <section id="a-body" class="document-viewer document-viewer-full" style="border:none;padding:4px 0;margin-bottom:24px;"></section>
+
+        <section style="border:1px solid var(--border-strong);border-radius:10px;padding:18px;margin-bottom:20px;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;align-items:center;">
+            <div style="font-size:13.5px;">
+              <p style="margin:0 0 6px 0;"><strong>İmzalayan:</strong> <span id="a-sig-name"></span></p>
+              <p id="a-sig-contact-wrap" class="hidden" style="margin:0 0 6px 0;"><strong>İletişim:</strong> <span id="a-sig-contact"></span></p>
+              <p style="margin:0 0 6px 0;"><strong>Doğrulama Yöntemi:</strong> <span id="a-sig-method"></span></p>
+              <p style="margin:0;color:var(--ok);font-weight:600;">&#10003; Okundu ve özgür iradeyle onaylandı.</p>
+            </div>
+            <div id="a-sig-visual" style="border:1px dashed #94a3b8;border-radius:8px;min-height:110px;display:grid;place-items:center;padding:10px;background:#fcfcfd;"></div>
+          </div>
+        </section>
+
+        <section class="audit-box">
+          <h3 style="margin:0 0 8px 0;font-size:13px;text-transform:uppercase;letter-spacing:0.04em;">Denetim İzi ve SHA-256 Bütünlük Özeti</h3>
+          <div class="audit-row"><span>Oluşturulma Tarihi</span><span id="a-created-at"></span></div>
+          <div class="audit-row"><span>İlk Görüntülenme</span><span id="a-viewed-at"></span></div>
+          <div class="audit-row"><span>İmzalanma Zamanı</span><span id="a-audit-signed-at"></span></div>
+          <div class="audit-row"><span>İmzalayan IP</span><span id="a-ip" class="mono"></span></div>
+          <div class="audit-row"><span>Cihaz / Tarayıcı</span><span id="a-ua"></span></div>
+          <div class="audit-row"><span>Metin SHA-256</span><span id="a-content-hash" class="mono"></span></div>
+          <div class="audit-row"><span>Belge Bütünlük SHA-256</span><span id="a-doc-hash" class="mono"></span></div>
+        </section>
+
+        <p class="disclaimer-footer" style="margin-bottom:0;">
+          Bu arşiv dijital onay ve zaman damgası kaydı içerir; 5070 sayılı Elektronik İmza Kanunu kapsamındaki nitelikli e-İmza / Mobil İmza yerine geçmez.
+        </p>
+      </article>
+    </div>
+  </main>
+
+  <script type="module" src="/app/archive.js"></script>
+</body>
+</html>
+

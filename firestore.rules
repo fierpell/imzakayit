@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/config/admin)
+        && get(/databases/$(database)/documents/config/admin).data.adminUid == request.auth.uid;
+    }
+
+    // Yönetici kurulum kaydı: sadece ilk yönetici oluşturabilir, sonradan değiştirilemez
+    match /config/admin {
+      allow get: if true;
+      allow list: if false;
+      allow create: if request.auth != null
+        && !exists(/databases/$(database)/documents/config/admin)
+        && request.resource.data.adminUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Telegram / Webhook ayarları: sadece yönetici okuyup yazabilir
+    match /config/settings {
+      allow read, write: if isAdmin();
+    }
+
+    // PIN kodları gibi yönetici sırları: sadece yönetici erişebilir
+    match /admin_secrets/{token} {
+      allow read, write: if isAdmin();
+    }
+
+    // Bildirim kayıtları: sadece yönetici okuyup silebilir; açılış/imza olayları sınırlı şemayla eklenebilir
+    match /notifications/{ntfId} {
+      allow read, delete: if isAdmin();
+      allow create: if isAdmin() || (
+        request.resource.data.keys().hasOnly(['id', 'createdAt', 'type', 'contractId', 'contractToken', 'title', 'message'])
+        && request.resource.data.type in ['contract.opened', 'contract.signed']
+      );
+      allow update: if false;
+    }
+
+    // Sözleşmeler
+    match /contracts/{token} {
+      // Listeleme, yeni oluşturma ve silme yalnızca yöneticiye açık
+      allow list, create, delete: if isAdmin();
+
+      // Tekil okuma: Yönetici her zaman okuyabilir.
+      // Bağlantıyı bilen kişi ise yalnızca belge henüz imzalanmamışsa (veya autoBurn kapalıysa) okuyabilir.
+      allow get: if isAdmin() || (
+        resource.data.status != 'signed' || resource.data.autoBurnAfterSign == false
+      );
+
+      // Güncelleme: Yönetici (imzalanmamışsa) veya geçerli imza/görüntüleme gönderen kişi
+      allow update: if isAdmin() || (
+        resource.data.status in ['pending', 'viewed']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'firstViewedAt', 'viewCount', 'updatedAt', 'signature'])
+        && request.resource.data.status in ['viewed', 'signed']
+        && (
+          request.resource.data.status == 'viewed'
+          || (
+            request.resource.data.status == 'signed'
+            && request.resource.data.signature != null
+            && request.resource.data.signature.consentAccepted == true
+            && (!resource.data.requirePin || request.resource.data.signature.pinHashAttempt == resource.data.pinHash)
+          )
+        )
+      );
+    }
+  }
+}

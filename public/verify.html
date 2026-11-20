@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Belge Bütünlük Doğrulama — İmzaKayıt</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">İK</div>
+        <span>Belge Doğrulama</span>
+      </div>
+      <nav class="nav-actions">
+        <a href="/" class="nav-link">Yönetici Paneli</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container-narrow">
+    <section class="card">
+      <h1 class="card-title" style="font-size:20px;margin-bottom:6px;">İmzalı Belge Bütünlüğünü Doğrula</h1>
+      <p class="muted" style="margin-top:0;">Arşiv dosyanızdaki Belge Numarası veya SHA-256 bütünlük özetini girerek belgenin imzalandıktan sonra değiştirilmediğini doğrulayabilirsiniz.</p>
+
+      <form id="verify-form">
+        <div class="form-group">
+          <label for="v-id">Belge Numarası (Opsiyonel)</label>
+          <input id="v-id" type="text" class="mono" placeholder="Örn: SZL-2026-A1B2C3" />
+        </div>
+        <div class="form-group">
+          <label for="v-hash">Belge veya Metin SHA-256 Özeti (Opsiyonel)</label>
+          <input id="v-hash" type="text" class="mono" placeholder="64 karakterlik SHA-256 hash" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg">Doğrula</button>
+      </form>
+
+      <div id="verify-result" class="hidden" style="margin-top:18px;"></div>
+    </section>
+  </main>
+
+  <script type="module" src="/app/verify.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,8 @@
+node_modules/
+data/
+imzalanan_sozlesmeler/
+.firebase/
+public/app/firebase-config.js
+.env
+*.tmp
+
