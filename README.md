@@ -13,7 +13,7 @@ npm start
 npm test
 ```
 
-Kendi Firebase projene kurmak istersen örnek config dosyasını kopyalayıp kendi bilgilerini girmen yeterli:
+Kendi Firebase projenize kurmak isterseniz örnek config dosyasını kopyalayıp kendi bilgilerinizi girmeniz yeterli:
 
 ```bash
 cp public/app/firebase-config.example.js public/app/firebase-config.js
